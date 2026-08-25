@@ -14,8 +14,7 @@ class OutputText(TypedDict):
 
 MessageContent = InputText | OutputText
 ToolOutputContent = InputText
-ToolCall = FunctionCall | CustomToolCall
-ToolCallOutput = FunctionCallOutput | CustomToolCallOutput
+
 
 # 用户文本
 class UserMessage(TypedDict) :
@@ -53,6 +52,9 @@ class CustomToolCallOutput(TypedDict):
     type: Literal["custom_tool_call_output"]
     call_id: str
     output: str | list[ToolOutputContent]
+
+ToolCall = FunctionCall | CustomToolCall
+ToolCallOutput = FunctionCallOutput | CustomToolCallOutput
 
 class ReasoningItem(TypedDict):
     type: Literal["reasoning"]

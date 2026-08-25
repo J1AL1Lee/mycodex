@@ -5,11 +5,14 @@ from dataclasses import dataclass
 from ..types import (
     ToolSpec,
     ExecutionContext,
+    FunctionCallOutput,
+    CustomToolCallOutput,
     ToolCall,
     ToolCallOutput,
-    )  
+)
 
-ToolHandler = Callable[..., str]
+ToolHandler = Callable[[ToolCall, ExecutionContext], str]
+
 
 class ToolRegistry:
     def __init__(self):
@@ -24,23 +27,33 @@ class ToolRegistry:
         self._tools[name] = (spec, handler)
 
     def specs(self) -> list[ToolSpec]:
-        return [
-            spec 
-            for spec, _ in self._tools.values()
-        ]
+        return [spec for spec, _ in self._tools.values()]
 
     def get_handler(self, name: str) -> ToolHandler:
         return self._tools[name][1]
 
-    def execution(
-            self,
-            call: ToolCall,
-            context: ExecutionContext,
-    )-> ToolCallOutput:
-        if call.name not in self._tools:
-           if call.type == function_call: 
-               return ToolCallOutput("function_call_output", call.call_id, "Unknown tool: {call.name}")
-           else: return ToolCallOutput("custom_tool_call_output", call.call_id, "Unknown tool: {call.name}")
+    def execute(
+        self,
+        call: ToolCall,
+        context: ExecutionContext,
+    ) -> ToolCallOutput:
+        tool = self._tools.get(call["name"])
+
+        if tool is None:
+            result = f"Unknown tool: {call['name']}"
         else:
-            handler = _tools[call.name][1]
-            
+            handler = tool[1]
+            result = handler(call, context)
+
+        if call["type"] == "function_call":
+            return FunctionCallOutput(
+                type="function_call_output",
+                call_id=call["call_id"],
+                output=result,
+            )
+
+        return CustomToolCallOutput(
+            type="custom_tool_call_output",
+            call_id=call["call_id"],
+            output=result,
+        )
