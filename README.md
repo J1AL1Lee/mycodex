@@ -1,94 +1,96 @@
 # mycodex
 
-一个用于学习 Codex 工作原理的最小实现。
+A minimal Codex-style coding agent built for learning how agent loops and tool calls work.
 
-当前版本已经跑通以下流程：
+The current implementation supports this flow:
 
 ```text
-用户输入
+User input
   ↓
-调用 DeepSeek 模型
+Call the DeepSeek model
   ↓
-模型返回 shell 工具调用
+The model returns a shell tool call
   ↓
-校验并执行工具
+Validate and execute the tool
   ↓
-将工具结果放回消息历史
+Append the tool result to the message history
   ↓
-再次调用模型
+Call the model again
   ↓
-模型返回最终文本
+Return the model's final text response
 ```
 
-## 已实现
+## Implemented
 
-- `ModelClient` 抽象接口
-- `FakeModelClient` 测试客户端
-- DeepSeek Responses API 客户端
-- Agent Loop
-- Tool Registry
-- shell 工具及参数校验
-- 工具输出与 `call_id` 配对
-- cwd、超时和输出大小限制
+- Abstract `ModelClient` interface
+- `FakeModelClient` for deterministic tests
+- DeepSeek Responses API client
+- Agent loop
+- Tool registry and dispatch
+- Shell tool with argument validation
+- Tool call/output pairing through `call_id`
+- Working directory, timeout, and output-size limits
 
-## 尚未实现
+## Not Implemented Yet
 
 - `apply_patch`
-- shell 沙箱和执行审批
-- 交互式、后台 shell 会话
-- 完整异常处理和自动化测试
+- Shell sandboxing and execution approval
+- Interactive or background shell sessions
+- Comprehensive error handling and automated tests
 
-## 安装
+## Requirements
 
-需要 Python 3.11 或更高版本。
+- Python 3.11 or newer
+- A DeepSeek API key
+
+Install the OpenAI Python SDK, which is compatible with the DeepSeek API:
 
 ```powershell
 python -m pip install openai
 ```
 
-## 配置
+## Configuration
 
-在 PowerShell 中设置 DeepSeek API Key：
+Set your DeepSeek API key in PowerShell:
 
 ```powershell
-$env:DEEPSEEK_API_KEY = "你的 API Key"
+$env:DEEPSEEK_API_KEY = "your-api-key"
 ```
 
-不要把 API Key 写进代码或提交到 Git。
+Never hard-code an API key or commit one to Git.
 
-## 运行
+## Running the Example
 
-仓库目录名应为 `mycodex`。进入仓库的父目录运行：
+The repository directory must be named `mycodex`. Run the module from its parent directory:
 
 ```powershell
 cd path\to\parent
 python -m mycodex.test
 ```
 
-示例输入会要求模型调用 shell 执行：
+The example asks the model to call the shell tool and execute:
 
 ```text
 echo Hello World
 ```
 
-## 目录结构
+## Project Structure
 
 ```text
 mycodex/
 ├── agents/
-│   └── agent.py          # Agent Loop
+│   └── agent.py          # Agent loop
 ├── llm/
-│   ├── base.py           # ModelClient 抽象接口
-│   ├── deepseek.py       # DeepSeek 客户端
-│   └── tests/fake.py     # 假模型客户端
+│   ├── base.py           # ModelClient interface
+│   ├── deepseek.py       # DeepSeek client
+│   └── tests/fake.py     # Fake model client
 ├── tools/
-│   ├── registry.py       # 工具注册与分发
-│   └── shell.py          # shell 工具
-├── types.py              # 消息、工具调用和上下文类型
-└── test.py               # 端到端运行示例
+│   ├── registry.py       # Tool registration and dispatch
+│   └── shell.py          # Shell tool
+├── types.py              # Messages, tool calls, and execution context
+└── test.py               # End-to-end example
 ```
 
-## 安全说明
+## Security Warning
 
-当前 shell 工具使用 `subprocess` 直接执行模型生成的命令，尚未实现沙箱和人工审批。只应在可控的学习环境中运行，不要用于生产环境或包含重要数据的目录。
-
+The current shell tool executes model-generated commands directly through `subprocess`. It does not provide sandboxing or human approval. Run it only in a controlled learning environment, never in production or in a directory containing important data.
