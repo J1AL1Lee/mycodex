@@ -3,7 +3,7 @@ from typing import cast
 from openai import OpenAI
 
 from .base import ModelClient
-from ..types import (
+from ..models import (
     ModelOutputItem,
     ModelResponse,
     ResponseItem,

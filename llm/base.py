@@ -1,4 +1,4 @@
-from ..types import ModelResponse, ResponseItem, ToolSpec
+from ..models import ModelResponse, ResponseItem, ToolSpec
 from abc import ABC, abstractmethod
 
 class ModelClient(ABC):
@@ -7,9 +7,6 @@ class ModelClient(ABC):
             self,
             history: list[ResponseItem],
             tool_space: list[ToolSpec],
-            )-> ModelResponse:
+    ) -> ModelResponse:
         ...
-
-        
-        
 

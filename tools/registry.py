@@ -1,8 +1,6 @@
 from collections.abc import Callable
 
-from dataclasses import dataclass
-
-from ..types import (
+from ..models import (
     ToolSpec,
     ExecutionContext,
     FunctionCallOutput,

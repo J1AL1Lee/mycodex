@@ -1,6 +1,6 @@
 import subprocess
 import json
-from ..types import ExecutionContext, ToolCall, ToolSpec
+from ..models import ExecutionContext, ToolCall, ToolSpec
 
 shell_spec: ToolSpec = {
     "type": "function",
