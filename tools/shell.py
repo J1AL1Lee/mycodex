@@ -43,6 +43,12 @@ def execute_shell(
     if not isinstance(command, str) or not command.strip():
         return "Invalid arguments: 'command' must be a non-empty string."
 
+    if context.command_approval is None:
+        return "Command blocked: no approval handler is configured."
+
+    if not context.command_approval(command):
+        return "Command denied by user"
+
     try:
         completed = subprocess.run(
             command,

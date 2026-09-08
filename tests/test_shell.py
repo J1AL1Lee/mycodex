@@ -10,8 +10,12 @@ from mycodex.tools.shell import execute_shell
 class ShellToolTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp_dir = tempfile.TemporaryDirectory()
-        root = Path(self.temp_dir.name)
-        self.context = ExecutionContext(workspace_root=root, cwd=root)
+        self.root = Path(self.temp_dir.name)
+        self.context = ExecutionContext(
+            workspace_root=self.root,
+            cwd=self.root,
+            command_approval=lambda command: True,
+        )
 
     def tearDown(self) -> None:
         self.temp_dir.cleanup()
@@ -44,6 +48,50 @@ class ShellToolTests(unittest.TestCase):
         self.assertEqual(
             result,
             "Invalid arguments: expected only 'command'.",
+        )
+
+    def test_shell_does_not_execute_a_rejected_command(self) -> None:
+        target = self.root / "should-not-exist.txt"
+        denied_context = ExecutionContext(
+            workspace_root=self.root,
+            cwd=self.root,
+            command_approval=lambda command: False,
+        )
+
+        result = execute_shell(
+            {
+                "type": "function_call",
+                "call_id": "shell_3",
+                "name": "shell",
+                "arguments": json.dumps(
+                    {"command": "echo blocked > should-not-exist.txt"}
+                ),
+            },
+            denied_context,
+        )
+
+        self.assertEqual(result, "Command denied by user")
+        self.assertFalse(target.exists())
+
+    def test_shell_blocks_commands_without_an_approval_handler(self) -> None:
+        context_without_approval = ExecutionContext(
+            workspace_root=self.root,
+            cwd=self.root,
+        )
+
+        result = execute_shell(
+            {
+                "type": "function_call",
+                "call_id": "shell_4",
+                "name": "shell",
+                "arguments": json.dumps({"command": "echo blocked"}),
+            },
+            context_without_approval,
+        )
+
+        self.assertEqual(
+            result,
+            "Command blocked: no approval handler is configured.",
         )
 
 

@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, NotRequired, TypedDict
-
+from collections.abc import Callable
 
 ToolSpec = dict[str, Any]
-
+CommandApproval = Callable[[str], bool]
 
 class InputText(TypedDict):
     type: Literal["input_text"]
@@ -87,6 +87,7 @@ class ExecutionContext:
     cwd: Path
     timeout_ms: int = 10_000
     max_output_bytes: int = 50_000
+    command_approval: CommandApproval | None = None
 
 
 ModelOutputItem = AssistantMessage | ReasoningItem | FunctionCall | CustomToolCall

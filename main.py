@@ -30,6 +30,7 @@ def main() -> None:
     context = ExecutionContext(
         workspace_root=workspace,
         cwd=workspace,
+        command_approval=confirm_command,
     )
 
     agent = Agent(
@@ -65,6 +66,12 @@ def main() -> None:
         except Exception as error:
             print(f"Error: {error}")
 
+def confirm_command(command: str) -> bool:
+    print("\nModel wants to run:")
+    print(command)
+
+    answer = input("Do you approve? (y/n): ").strip().lower()
+    return answer in {"y", "yes"}
 
 if __name__ == "__main__":
     main()
