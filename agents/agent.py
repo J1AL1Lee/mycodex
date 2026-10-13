@@ -9,24 +9,31 @@ from ..models import (
 )
 from ..tools.registry import ToolRegistry
 
+
+class MaxTurnExceeded(RuntimeError):
+    """The model kept calling tools without giving a final answer."""
+
+
 class Agent:
     def __init__(
         self,
         model_client: ModelClient,
         tool_registry: ToolRegistry,
         context: ExecutionContext,
+        max_turn: int = 50,
     ):
         self.model_client = model_client
         self.tool_registry = tool_registry
         self.context = context
+        self.max_turn = max_turn
         self.history: list[ResponseItem] = []
 
     def run(self, user_message: InputText) -> OutputText:
         self.history.append(
             UserMessage(type="message", role="user", content=[user_message])
         )
-
-        while True:
+        turn_count = 0
+        while turn_count < self.max_turn:
             model_response: ModelResponse = self.model_client.generate(
                 self.history,
                 self.tool_registry.specs(),
@@ -50,7 +57,7 @@ class Agent:
                         self.tool_registry.execute(output, self.context)
                     )
                     called_a_tool = True
-
+            turn_count += 1
             if called_a_tool:
                 continue
 
@@ -58,3 +65,6 @@ class Agent:
                 return final_text
 
             raise RuntimeError("Model response contained neither a tool call nor text.")
+        raise MaxTurnExceeded(
+            f"Stopped after {self.max_turn} model calls without a final answer."
+        )
