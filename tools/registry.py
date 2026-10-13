@@ -41,8 +41,11 @@ class ToolRegistry:
             result = f"Unknown tool: {call['name']}"
         else:
             handler = tool[1]
-            result = handler(call, context)
-
+            try:
+                result = handler(call, context)
+            except Exception as error:
+                result = f"{error}"
+        
         if call["type"] == "function_call":
             return FunctionCallOutput(
                 type="function_call_output",
